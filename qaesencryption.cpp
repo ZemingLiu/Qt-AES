@@ -228,6 +228,8 @@ QByteArray QAESEncryption::expandKey(const QByteArray &key, bool isEncryptionKey
               break;
           }
       } else
+#else
+  Q_UNUSED(isEncryptionKey);
 #endif
   {
 
@@ -512,15 +514,15 @@ QByteArray QAESEncryption::encode(const QByteArray &rawText, const QByteArray &k
     case ECB: {
 #ifdef USE_INTEL_AES_IF_AVAILABLE
         if (m_aesNIAvailable){
-            char expKey[expandedKey.size()];
-            memcpy(expKey, expandedKey.data(), expandedKey.size());
+            std::vector<char> expKey(expandedKey.size());
+            memcpy(expKey.data(), expandedKey.data(), expandedKey.size());
 
             QByteArray outText;
             outText.resize(alignedText.size());
             AES_ECB_encrypt((unsigned char*) alignedText.constData(),
                             (unsigned char*) outText.data(),
                             alignedText.size(),
-                            expKey,
+                            expKey.data(),
                             m_nr);
             return outText;
         }
@@ -534,18 +536,18 @@ QByteArray QAESEncryption::encode(const QByteArray &rawText, const QByteArray &k
     case CBC: {
 #ifdef USE_INTEL_AES_IF_AVAILABLE
         if (m_aesNIAvailable){
-            quint8 ivec[iv.size()];
-            memcpy(ivec, iv.data(), iv.size());
-            char expKey[expandedKey.size()];
-            memcpy(expKey, expandedKey.data(), expandedKey.size());
+            std::vector<quint8> ivec(iv.size());
+            memcpy(ivec.data(), iv.data(), iv.size());
+            std::vector<char> expKey(expandedKey.size());
+            memcpy(expKey.data(), expandedKey.data(), expandedKey.size());
 
             QByteArray outText;
             outText.resize(alignedText.size());
             AES_CBC_encrypt((unsigned char*) alignedText.constData(),
                             (unsigned char*) outText.data(),
-                            ivec,
+                            ivec.data(),
                             alignedText.size(),
-                            expKey,
+                            expKey.data(),
                             m_nr);
             return outText;
         }
@@ -614,14 +616,14 @@ QByteArray QAESEncryption::decode(const QByteArray &rawText, const QByteArray &k
     case ECB:
 #ifdef USE_INTEL_AES_IF_AVAILABLE
         if (m_aesNIAvailable){
-            char expKey[expandedKey.size()];                                //expandedKey
-            memcpy(expKey, expandedKey.data(), expandedKey.size());
+            std::vector<char> expKey(expandedKey.size());                   //expandedKey
+            memcpy(expKey.data(), expandedKey.data(), expandedKey.size());
             ret.resize(rawText.size());
 
             AES_ECB_decrypt((unsigned char*) rawText.constData(),
                             (unsigned char*) ret.data(),
                             rawText.size(),
-                            expKey,
+                            expKey.data(),
                             m_nr);
             break;
         }
@@ -632,17 +634,17 @@ QByteArray QAESEncryption::decode(const QByteArray &rawText, const QByteArray &k
     case CBC:
 #ifdef USE_INTEL_AES_IF_AVAILABLE
         if (m_aesNIAvailable){
-            quint8 ivec[iv.size()];                                         //IV
-            memcpy(ivec, iv.constData(), iv.size());
-            char expKey[expandedKey.size()];                                //expandedKey
-            memcpy(expKey, expandedKey.data(), expandedKey.size());
+            std::vector<quint8> ivec(iv.size());                            //IV
+            memcpy(ivec.data(), iv.constData(), iv.size());
+            std::vector<char> expKey(expandedKey.size());                   //expandedKey
+            memcpy(expKey.data(), expandedKey.data(), expandedKey.size());
             ret.resize(rawText.size());
 
             AES_CBC_decrypt((unsigned char*) rawText.constData(),
                             (unsigned char*) ret.data(),
-                            ivec,
+                            ivec.data(),
                             rawText.size(),
-                            expKey,
+                            expKey.data(),
                             m_nr);
             break;
         }
