@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
-project(QtAES VERSION 1.1 LANGUAGES CXX)
+project(QtAES VERSION 1.2 LANGUAGES CXX)
 
 set(QTAES_STANDALONE_BUILD OFF)
 if(PROJECT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
@@ -111,8 +111,7 @@ if(QTAES_ENABLE_TESTS)
             main.cpp
             res.qrc
             unit_test/aestest.cpp
-            unit_test/aestest.h
-            unit_test/longText.txt)
+            unit_test/aestest.h)
 
     target_link_libraries(AESTest
         PRIVATE
@@ -153,7 +152,12 @@ if(QTAES_ENABLE_INSTALL)
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
         NAMESPACE ${PROJECT_NAME}::)
 
-    configure_file(${PROJECT_NAME}Config.cmake.in ${PROJECT_NAME}Config.cmake @ONLY)
+    configure_package_config_file(
+        "${PROJECT_NAME}Config.cmake.in"
+        "${CMAKE_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+        PATH_VARS CMAKE_INSTALL_INCLUDEDIR CMAKE_INSTALL_LIBDIR
+    )
 
     write_basic_package_version_file(
         "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
